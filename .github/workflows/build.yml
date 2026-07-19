@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build and Release Windows
 
 on:
   workflow_dispatch:
@@ -11,17 +11,9 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        target: [linux, windows, macos]
-        arch: [x86_64, arm64, i686]
-        exclude:
-          # Fails (.mozbuild does not include clang++-cl)
-          - target: windows
-            arch: arm64
-          # Unsupported
-          - target: macos
-            arch: i686
-          - target: linux
-            arch: i686
+        # Strictly target Windows architectures only
+        target: [windows]
+        arch: [x86_64, i686]
 
     steps:
       - name: Maximize build space
@@ -37,7 +29,6 @@ jobs:
           verbose: "false"
 
       - name: Remove unwanted tools
-        # Originally from here: https://github.com/AdityaGarg8/remove-unwanted-software/blob/master/action.yml
         run: |
           sudo apt-get remove -y '^aspnetcore-.*' > /dev/null
           sudo apt-get remove -y '^dotnet-.*' > /dev/null
@@ -84,8 +75,6 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          # ccache: the mozconfig enables --with-ccache, but the runner image no
-          # longer ships it, so configure fails with "Cannot find ccache".
           sudo apt-get install -y msitools p7zip-full aria2 ccache
 
       - name: Fetch source
@@ -111,8 +100,6 @@ jobs:
 
       - name: Build
         env:
-          # Cap Rust parallelism to lower peak memory (avoids OOM/SIGTERM).
-          # Tune to taste: higher = faster but more RAM.
           CARGO_BUILD_JOBS: "1"
         run: python3 ./multibuild.py --target ${{ matrix.target }} --arch ${{ matrix.arch }}
 
