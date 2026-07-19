@@ -1,0 +1,8 @@
+diff --git a/dom/canvas/WebGLContextValidate.cpp b/dom/canvas/WebGLContextValidate.cpp
+--- a/dom/canvas/WebGLContextValidate.cpp
++++ b/dom/canvas/WebGLContextValidate.cpp
+@@ -112,6 +112,12 @@
+     case LOCAL_GL_RENDERER:
++        return GetStringOverride("webgl.renderer-string-override");
+     case LOCAL_GL_VENDOR:
++        return GetStringOverride("webgl.vendor-string-override");
